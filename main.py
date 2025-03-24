@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 from database import create_table, add_task, get_all_tasks, get_task_by_id, update_task, delete_task
 
 app = FastAPI()
@@ -6,10 +7,20 @@ app = FastAPI()
 # Create the tasks table (ensure it's created when the app starts)
 create_table()
 
+# Define Task Model for Request Body
+class TaskCreate(BaseModel):
+    title: str
+    description: str
+
+class TaskUpdate(BaseModel):
+    title: str
+    description: str
+    status: str
+
 # Create a new task
 @app.post("/tasks/")
-def create_task(title: str, description: str):
-    add_task(title, description)
+def create_task(tasks: TaskCreate):
+    add_task(tasks.title, tasks.description)
     return {"message": "Task added successfully!"}
 
 # Get all tasks
@@ -28,8 +39,8 @@ def get_task(task_id: int):
 
 # Update a task
 @app.put("/tasks/{task_id}")
-def update_task_endpoint(task_id: int, title: str, description: str, status: str):
-    update_task(task_id, title, description, status)
+def update_task_endpoint(task_id: int, tasks: TaskUpdate):
+    update_task(task_id, tasks.title, tasks.description, tasks.status)
     return {"message": "Task updated successfully!"}
 
 # Delete a task
